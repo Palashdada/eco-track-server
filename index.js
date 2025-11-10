@@ -61,10 +61,7 @@ async function run() {
     });
     app.get("/active-challenges", async (req, res) => {
       const date = new Date().toISOString();
-      const activeChallenges = await challengesColl
-        .find({ startDate: { $lte: date }, endDate: { $gte: date } })
-        .limit(4)
-        .toArray();
+      const activeChallenges = await challengesColl.find().limit(4).toArray();
       res.send(activeChallenges);
     });
     app.get("/recent-tips", async (req, res) => {
@@ -73,9 +70,17 @@ async function run() {
         .sort({
           createdAt: -1,
         })
-        .limit(4)
+        .limit(5)
         .toArray();
       res.send(tips);
+    });
+    app.get("/upcoming-events", async (req, res) => {
+      const event = await eventsCall
+        .find()
+        .sort({ date: 1 })
+        .limit(4)
+        .toArray();
+      res.send(event);
     });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
