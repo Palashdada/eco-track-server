@@ -59,6 +59,14 @@ async function run() {
         totalChallenges,
       });
     });
+    app.get("/active-challenges", async (req, res) => {
+      const date = new Date().toISOString();
+      const activeChallenges = await challengesColl
+        .find({ startDate: { $lte: date }, endDate: { $gte: date } })
+        .limit(4)
+        .toArray();
+      res.send(activeChallenges);
+    });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
