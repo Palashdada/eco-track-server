@@ -67,6 +67,16 @@ async function run() {
         .toArray();
       res.send(activeChallenges);
     });
+    app.get("/recent-tips", async (req, res) => {
+      const tips = await tipsCall
+        .find()
+        .sort({
+          createdAt: -1,
+        })
+        .limit(4)
+        .toArray();
+      res.send(tips);
+    });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
