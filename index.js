@@ -109,6 +109,7 @@ async function run() {
           .send({ message: "You already joined this challenge." });
       }
       await userChallengeColl.insertOne({
+        challenge,
         userId,
         challengeId: new ObjectId(id),
         email,
@@ -202,12 +203,23 @@ async function run() {
       });
     });
     app.get("/my-activities", async (req, res) => {
-      const { userId } = req.query;
-      const activities = await userChallengeColl.find({ userId }).toArray();
+      const { email } = req.query;
+      const activities = await userChallengeColl.find({ email }).toArray();
 
       res.send(activities);
     });
+    app.get("/my-activities/:id", async (req, res) => {
+      const { id } = req.params;
+      const activity = await userChallengeColl.findOne({
+        _id: new ObjectId(id),
+      });
 
+      const challenge = await challengesColl.findOne({
+        _id: new ObjectId(activity.challengeId),
+      });
+
+      res.send({ ...activity, challenge });
+    });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
