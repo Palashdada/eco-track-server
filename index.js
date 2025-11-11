@@ -108,13 +108,58 @@ async function run() {
           .status(400)
           .send({ message: "You already joined this challenge." });
       }
-      await userChallengeColl.insertOne(newUserChallenge);
+      await userChallengeColl.insertOne({
+        userId,
+        challengeId: new ObjectId(id),
+        email,
+        status: "Not Started",
+        progress: 0,
+        joinDate: new Date(),
+      });
       await challengesColl.updateOne(
         { _id: new ObjectId(id) },
         { $inc: { participants: 1 } }
       );
       res.send({ message: "Joined successfully" });
     });
+
+    app.post("/api/challenges", async (req, res) => {
+      const {
+        title,
+        category,
+        description,
+        duration,
+        target,
+        impactMetric,
+        imageUrl,
+        createdBy,
+        startDate,
+        endDate,
+      } = req.body;
+
+      const newChallenge = {
+        title,
+        category,
+        description,
+        duration: Number(duration),
+        target,
+        participants: 0,
+        impactMetric,
+        createdBy: createdBy,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        imageUrl,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const result = await challengesColl.insertOne(newChallenge);
+
+      res.status(201).send({
+        message: "Challenge created successfully!",
+      });
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
