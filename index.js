@@ -123,7 +123,7 @@ async function run() {
       res.send({ message: "Joined successfully" });
     });
 
-    app.post("/api/challenges", async (req, res) => {
+    app.post("/challenges/add", async (req, res) => {
       const {
         title,
         category,
@@ -158,6 +158,28 @@ async function run() {
       res.status(201).send({
         message: "Challenge created successfully!",
       });
+    });
+    app.patch("challenges/edit/:id", async (req, res) => {
+      const { id } = req.params;
+      const { userEmail, ...updateData } = req.body;
+
+      const challenge = await challengesColl.findOne({
+        _id: new ObjectId(id),
+      });
+
+      if (challenge.createdBy !== userEmail) {
+        return res.status(403).send({
+          success: false,
+          message: "You are not authorized to update this challenge",
+        });
+      }
+
+      const result = await challengesColl.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { ...updateData, updatedAt: new Date() } }
+      );
+
+      res.send({ message: "Challenge updated successfully!" });
     });
 
     // Send a ping to confirm a successful connection
