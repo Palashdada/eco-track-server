@@ -1,5 +1,5 @@
 const express = require("express");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const cors = require("cors");
 const port = process.env.PORT || 3000;
@@ -43,6 +43,10 @@ async function run() {
         .toArray();
       res.send(result);
     });
+    app.get("/all-challenges", async (req, res) => {
+      const result = await challengesColl.find().toArray();
+      res.send(result);
+    });
     app.get("/live-statics", async (req, res) => {
       const totalChallenges = await challengesColl.countDocuments();
       const totalParticipants = await challengesColl
@@ -81,6 +85,12 @@ async function run() {
         .limit(4)
         .toArray();
       res.send(event);
+    });
+    app.get("/challenges/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await challengesColl.findOne(query);
+      res.send(result);
     });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
