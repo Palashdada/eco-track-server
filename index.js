@@ -201,6 +201,12 @@ async function run() {
         message: "Challenge deleted successfully!",
       });
     });
+    app.get("/my-activities", async (req, res) => {
+      const { userId } = req.query;
+      const activities = await userChallengeColl.find({ userId }).toArray();
+
+      res.send(activities);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
