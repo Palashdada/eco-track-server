@@ -33,6 +33,7 @@ async function run() {
     const challengesColl = db.collection("challenges-Collection");
     const tipsCall = db.collection("tips-Collection");
     const eventsCall = db.collection("events-Collection");
+    const userChallengeColl = db.collection("userChallenge-Collection");
     app.get("/hero-challenges", async (req, res) => {
       const result = await challengesColl
         .find()
@@ -91,6 +92,28 @@ async function run() {
       const query = { _id: new ObjectId(id) };
       const result = await challengesColl.findOne(query);
       res.send(result);
+    });
+    app.post("/challenges/join/:id", async (req, res) => {
+      const id = req.params.id;
+      const { userId, email } = req.body;
+      const challenge = await challengesColl.findOne({
+        _id: new ObjectId(id),
+      });
+      const alreadyJoined = await userChallengeColl.findOne({
+        challengeId: new ObjectId(id),
+        userId,
+      });
+      if (alreadyJoined) {
+        return res
+          .status(400)
+          .send({ message: "You already joined this challenge." });
+      }
+      await userChallengeColl.insertOne(newUserChallenge);
+      await challengesColl.updateOne(
+        { _id: new ObjectId(id) },
+        { $inc: { participants: 1 } }
+      );
+      res.send({ message: "Joined successfully" });
     });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
