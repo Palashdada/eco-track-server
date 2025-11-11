@@ -220,6 +220,24 @@ async function run() {
 
       res.send({ ...activity, challenge });
     });
+
+    app.patch("/user-challenges/:id/status", async (req, res) => {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      const allowedStatuses = ["Not Started", "Ongoing", "Finished"];
+      if (!allowedStatuses.includes(status)) {
+        return res.status(400).send({ message: "Invalid status" });
+      }
+
+      const result = await userChallengeColl.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { status, updatedAt: new Date() } }
+      );
+
+      res.send({ message: `Status updated to "${status}"` });
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
