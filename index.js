@@ -159,7 +159,7 @@ async function run() {
         message: "Challenge created successfully!",
       });
     });
-    app.patch("challenges/edit/:id", async (req, res) => {
+    app.patch("/challenges/:id", async (req, res) => {
       const { id } = req.params;
       const { userEmail, ...updateData } = req.body;
 
@@ -180,6 +180,26 @@ async function run() {
       );
 
       res.send({ message: "Challenge updated successfully!" });
+    });
+    app.delete("/challenges/:id", async (req, res) => {
+      const { id } = req.params;
+      const { userEmail } = req.body;
+
+      const challenge = await challengesColl.findOne({
+        _id: new ObjectId(id),
+      });
+
+      if (challenge.createdBy !== userEmail) {
+        return res.status(403).send({
+          message: "You are not authorized to delete this challenge",
+        });
+      }
+
+      await challengesColl.deleteOne({ _id: new ObjectId(id) });
+
+      res.send({
+        message: "Challenge deleted successfully!",
+      });
     });
 
     // Send a ping to confirm a successful connection
