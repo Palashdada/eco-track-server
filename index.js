@@ -2,13 +2,13 @@ const express = require("express");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const cors = require("cors");
+require("dotenv").config();
 const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 
-const uri =
-  "mongodb+srv://eco-track:6CDEXlO0HuSTzUuE@cluster0.hgrlmye.mongodb.net/?appName=Cluster0";
+const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.BD_PASSWORD}@cluster0.hgrlmye.mongodb.net/?appName=Cluster0`;
 
 app.get("/", (req, res) => {
   res.send("Server is ok");
@@ -65,10 +65,10 @@ async function run() {
       });
     });
     app.get("/active-challenges", async (req, res) => {
-      const date = new Date().toISOString();
       const activeChallenges = await challengesColl.find().limit(4).toArray();
       res.send(activeChallenges);
     });
+
     app.get("/recent-tips", async (req, res) => {
       const tips = await tipsCall
         .find()
@@ -79,12 +79,25 @@ async function run() {
         .toArray();
       res.send(tips);
     });
+    app.get("/all-tips", async (req, res) => {
+      const tips = await tipsCall
+        .find()
+        .sort({
+          createdAt: -1,
+        })
+        .toArray();
+      res.send(tips);
+    });
     app.get("/upcoming-events", async (req, res) => {
       const event = await eventsCall
         .find()
         .sort({ date: 1 })
         .limit(4)
         .toArray();
+      res.send(event);
+    });
+    app.get("/all-events", async (req, res) => {
+      const event = await eventsCall.find().toArray();
       res.send(event);
     });
     app.get("/challenges/:id", async (req, res) => {
